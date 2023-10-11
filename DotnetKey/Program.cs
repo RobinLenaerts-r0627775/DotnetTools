@@ -1,34 +1,11 @@
-﻿using System;
-using CommandLine;
+﻿return Parser.Default.ParseArguments<HashOptions>(args)
+            .MapResult(
+                Hash,
+                errors => 1);
 
-var result = Parser.Default.ParseArguments<Options>(args);
-result.WithParsed(options =>
+static int Hash(HashOptions options)
 {
-    if (options.Help)
-    {
-        Help();
-    }
-    else
-    {
-        Hash();
-    }
-});
-
-void Help()
-{
-    Console.WriteLine("Usage: dotnet key [options] [command]");
-    Console.WriteLine();
-    Console.WriteLine("Options:");
-    Console.WriteLine("  --help                Show this help message and exit.");
-    Console.WriteLine();
-    Console.WriteLine("Commands:");
-    Console.WriteLine("  hash                  Hash a string with bcrypt.");
-}
-
-void Hash()
-{
-    //get the second option
-    var stringToHash = Environment.GetCommandLineArgs()[2];
+    var stringToHash = options.StringToHash;
 
     if (string.IsNullOrWhiteSpace(stringToHash))
     {
@@ -49,10 +26,27 @@ void Hash()
     Console.ForegroundColor = ConsoleColor.Green;
     Console.WriteLine(hashedString);
     Console.ResetColor();
+    return 0;
 }
 
-class Options
+[Verb("hash", HelpText = "Hash a string with bcrypt.")]
+class HashOptions
 {
+    [Value(0, Required = false, HelpText = "The string to hash. If not specified, a random string will be generated.")]
+    public string StringToHash { get; set; }
+
     [Option('h', "help", Required = false, HelpText = "Show this help message and exit.")]
     public bool Help { get; set; }
+}
+
+class ProgramOptions
+{
+    [Option('v', "verbose", Required = false, HelpText = "Enable verbose output")]
+    public bool Verbose { get; set; }
+
+    [Option('i', "input", Required = false, HelpText = "Input file path")]
+    public string InputFile { get; set; }
+
+    [Option('o', "output", Required = false, HelpText = "Output file path")]
+    public string OutputFile { get; set; }
 }
