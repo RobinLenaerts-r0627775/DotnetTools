@@ -1,1 +1,2 @@
-﻿global using CommandLine;
+﻿global using System.CommandLine;
+global using DotnetKey;

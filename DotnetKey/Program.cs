@@ -1,52 +1,58 @@
-﻿return Parser.Default.ParseArguments<HashOptions>(args)
-            .MapResult(
-                Hash,
-                errors => 1);
-
-static int Hash(HashOptions options)
+﻿var rootCommand = new RootCommand("CLI Tool to generate and verify bcrypt hashes.")
 {
-    var stringToHash = options.StringToHash;
+    Name = "dotnet-key"
+};
+string[] helpFlag = ["-h"];
+try
+{
+    var hashCommand = new Command("hash", "Hash a string with bcrypt.");
+    var stringToHash = new Option<string>(
+        aliases: ["-i", "--input"],
+        description: "The input string to be hashed");
+    hashCommand.AddOption(stringToHash);
 
-    if (string.IsNullOrWhiteSpace(stringToHash))
+    hashCommand.SetHandler(async (input) =>
+        {
+            if (Commands.Hash(input) == 1)
+            {
+                await hashCommand.InvokeAsync(helpFlag);
+            }
+        },
+        stringToHash);
+
+    var verifyCommand = new Command("verify", "Verify a string with bcrypt.");
+    var inputOption = new Option<string>(
+        aliases: ["-i", "--input"],
+        description: "The string to be verified")
     {
-        //generate random string of 32 characters
-        stringToHash = Guid.NewGuid().ToString();
-    }
+        IsRequired = true
+    };
+    var hashOption = new Option<string>(
+        aliases: ["-H", "--hash"],
+        description: "The hash to be verified against. To avoid escaping issues, use single quotes around the hash.")
+    {
+        IsRequired = true
+    };
+    verifyCommand.AddOption(inputOption);
+    verifyCommand.AddOption(hashOption);
 
-    //hash with bcrypt
-    var hashedString = BCrypt.Net.BCrypt.HashPassword(stringToHash);
+    verifyCommand.SetHandler(async (input, hash) =>
+    {
+        if (Commands.Verify(input, hash) == 1)
+        {
+            await verifyCommand.InvokeAsync(helpFlag);
+        }
+    },
+    inputOption, hashOption);
+    rootCommand.AddCommand(hashCommand);
+    rootCommand.AddCommand(verifyCommand);
+    var res = await rootCommand.InvokeAsync(args);
 
-    //print to console
-    Console.ResetColor();
-    Console.Write($"unhashed:");
-    Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine(stringToHash);
-    Console.ResetColor();
-    Console.Write($"hashed:");
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine(hashedString);
-    Console.ResetColor();
-    return 0;
+    return res;
 }
-
-[Verb("hash", HelpText = "Hash a string with bcrypt.")]
-class HashOptions
+catch (Exception e)
 {
-    [Value(0, Required = false, HelpText = "The string to hash. If not specified, a random string will be generated.")]
-    public string StringToHash { get; set; }
-
-    [Option('h', "help", Required = false, HelpText = "Show this help message and exit.")]
-    public bool Help { get; set; }
-}
-
-class ProgramOptions
-{
-    [Option('v', "verbose", Required = false, HelpText = "Enable verbose output")]
-    public bool Verbose { get; set; }
-
-    [Option('i', "input", Required = false, HelpText = "Input file path")]
-    public string InputFile { get; set; }
-
-    [Option('o', "output", Required = false, HelpText = "Output file path")]
-    public string OutputFile { get; set; }
+    Console.WriteLine(e.Message);
+    await rootCommand.InvokeAsync(helpFlag);
+    return 1;
 }
