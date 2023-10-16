@@ -2,12 +2,12 @@
 {
     Name = "dotnet-key"
 };
-string[] helpFlag = ["-h"];
+string[] helpFlag = new string[] { "-h" };
 try
 {
     var hashCommand = new Command("hash", "Hash a string with bcrypt.");
     var stringToHash = new Option<string>(
-        aliases: ["-i", "--input"],
+        aliases: new string[] { "-i", "--input" },
         description: "The input string to be hashed");
     hashCommand.AddOption(stringToHash);
 
@@ -22,13 +22,13 @@ try
 
     var verifyCommand = new Command("verify", "Verify a string with bcrypt.");
     var inputOption = new Option<string>(
-        aliases: ["-i", "--input"],
+        aliases: new string[] { "-i", "--input" },
         description: "The string to be verified")
     {
         IsRequired = true
     };
     var hashOption = new Option<string>(
-        aliases: ["-H", "--hash"],
+        aliases: new string[] { "-H", "--hash" },
         description: "The hash to be verified against. To avoid escaping issues, use single quotes around the hash.")
     {
         IsRequired = true
