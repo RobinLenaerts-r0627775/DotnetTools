@@ -13,6 +13,7 @@
     <Authors>Robin Lenaerts</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>dotnet-key</PackageTags>
+    <PackageRepositoryUrl>https://github.com/RobinLenaerts-r0627775/DotnetTools</PackageRepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
