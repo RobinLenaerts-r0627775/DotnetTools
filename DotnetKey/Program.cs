@@ -6,19 +6,27 @@ string[] helpFlag = ["-h"];
 try
 {
     var hashCommand = new Command("hash", "Hash a string with bcrypt.");
+    //deprecated
+
     var stringToHash = new Option<string>(
         aliases: ["-i", "--input"],
-        description: "The input string to be hashed");
+        description: "The input string to be hashed (deprecated)"
+        );
     hashCommand.AddOption(stringToHash);
+    var stringToHashArgument = new Argument<string>(
+        name: "input",
+        description: "The input string to be hashed");
+    hashCommand.AddArgument(stringToHashArgument);
 
-    hashCommand.SetHandler(async (input) =>
+    hashCommand.SetHandler(async (input, inputArg) =>
         {
-            if (Commands.Hash(input) == 1)
+            var actualinput = inputArg ?? input;
+            if (Commands.Hash(actualinput) == 1)
             {
                 await hashCommand.InvokeAsync(helpFlag);
             }
         },
-        stringToHash);
+        stringToHash, stringToHashArgument);
 
     var verifyCommand = new Command("verify", "Verify a string with bcrypt.");
     var inputOption = new Option<string>(
